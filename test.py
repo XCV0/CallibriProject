@@ -1,3 +1,5 @@
+#ТУТ КЛИЕНТ ДЛЯ ПЕРЕДАЧИ ДАННЫХ НАШЕГО СОТРУДНИКА НА СЕРВАК#
+
 import sys
 
 from PyQt6.QtWidgets import QApplication, QMainWindow
@@ -10,16 +12,16 @@ class MainScreen(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi("ui/MainWindow.ui", self)
-        # self.startCalcButton.setVisible(False)
-        # self.stopCalcButton.setVisible(False)
-        # self.label_3.setVisible(False)
-        # self.hasRR.setVisible(False)
-        # self.label_4.setVisible(False)
-        # self.hrValue.setVisible(False)
+        self.startCalcButton.setVisible(False)
+        self.stopCalcButton.setVisible(False)
+        self.label_3.setVisible(False)
+        self.hasRR.setVisible(False)
+        self.label_4.setVisible(False)
+        self.hrValue.setVisible(False)
 
-        self.findDeviceBtn.clicked.connect(self.start_search)
-        # self.startCalcButton.clicked.connect(self.start_calc)
-        # self.stopCalcButton.clicked.connect(self.stop_calc)
+        self.searchButton.clicked.connect(self.start_search)
+        self.startCalcButton.clicked.connect(self.start_calc)
+        self.stopCalcButton.clicked.connect(self.stop_calc)
         self.foundedListWidget.itemClicked.connect(self.connect_to_device)
         self.__founded_sensors=list[CallibriInfo]
 
