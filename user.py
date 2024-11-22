@@ -25,13 +25,13 @@ class MainScreen(QMainWindow):
 
     def start_search(self):
         self.foundedListWidget.clear()
-        self.searchButton.setText("Поиск...")
-        self.searchButton.setEnabled(False)
+        self.findDeviceBtn.setText("Поиск...")
+        self.findDeviceBtb.setEnabled(False)
 
         def on_device_founded(sensors: list[CallibriInfo]):
             self.__founded_sensors=sensors
             self.foundedListWidget.addItems([sens.Name + ' (' + sens.Address + ')' for sens in sensors])
-            self.searchButton.setText("Искать заново...")
+            self.foundedDeviceBtn.setText("Искать заново...")
             self.searchButton.setEnabled(True)
             callibri_controller.foundedDevices.disconnect(on_device_founded)
 

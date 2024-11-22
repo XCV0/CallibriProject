@@ -2,8 +2,11 @@ from flask import Flask, request, jsonify
 import sqlite3
 app = Flask(__name__)
 
-# Замените 'data.txt' на желаемый путь к файлу
-data_file = 'db\\users.db'
+# Замените 'data.txt' на желаемый путь к файлу\
+data_file = "server\\db\\users.db"
+
+#connection = sqlite3.connect(data_file)
+#cursor = connection.cursor()
 
 @app.route('/writedata')
 def write_data():
@@ -13,17 +16,17 @@ def write_data():
     emotions = request.args.get('emotions')
     
     values = [
-      (name, datapulse, emotions)
+      (name),(datapulse),(emotions)
     ]
     
     if not name or not datapulse or not emotions:
       return jsonify({'error': 'Не все параметры указаны'}), 400
-
-    with sqlite3.connect("users.db") as db:
+    
+    with sqlite3.connect("server\\db\\users.db") as db:
       cursor = db.cursor()
       
-    cursor.executemany("INSERT INTO users(nickname, pulse_data, emotion_data) VALUES(?, ?, ?)", values)
-    cursor.execute("SELECT * FROM users")
+    cursor.execute("INSERT INTO users(nickname, pulse_data, emotions_data) VALUES(?, ?, ?)", values)
+    db.commit()
     
     return jsonify({'message': 'Данные успешно записаны'}), 200
 
