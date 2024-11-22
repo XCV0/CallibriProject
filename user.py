@@ -1,3 +1,6 @@
+#ТУТ КЛИЕНТ ДЛЯ ПЕРЕДАЧИ ДАННЫХ НАШЕГО СОТРУДНИКА НА СЕРВАК#
+
+# import requests
 import sys
 
 from PyQt6.QtWidgets import QApplication, QMainWindow
@@ -10,33 +13,34 @@ class MainScreen(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi("ui/MainWindow.ui", self)
-        # self.startCalcButton.setVisible(False)
-        # self.stopCalcButton.setVisible(False)
-        # self.label_3.setVisible(False)
-        # self.hasRR.setVisible(False)
-        # self.label_4.setVisible(False)
-        # self.hrValue.setVisible(False)
 
         self.findDeviceBtn.clicked.connect(self.start_search)
-        # self.startCalcButton.clicked.connect(self.start_calc)
-        # self.stopCalcButton.clicked.connect(self.stop_calc)
+        self.startConServBtn.clicked.connect(self.start_service)
+
         self.foundedListWidget.itemClicked.connect(self.connect_to_device)
         self.__founded_sensors=list[CallibriInfo]
 
     def start_search(self):
         self.foundedListWidget.clear()
         self.findDeviceBtn.setText("Поиск...")
-        self.findDeviceBtb.setEnabled(False)
+        self.findDeviceBtn.setEnabled(False)
 
         def on_device_founded(sensors: list[CallibriInfo]):
             self.__founded_sensors=sensors
             self.foundedListWidget.addItems([sens.Name + ' (' + sens.Address + ')' for sens in sensors])
-            self.foundedDeviceBtn.setText("Искать заново...")
-            self.searchButton.setEnabled(True)
+            self.findDeviceBtn.setText("Искать заново...")
+            self.findDeviceBtn.setEnabled(True)
             callibri_controller.foundedDevices.disconnect(on_device_founded)
 
         callibri_controller.foundedDevices.connect(on_device_founded)
         callibri_controller.search_with_result(5, [])
+
+    def start_service(self):
+        print("fff")
+        if str(self.nicknameEdit.text()) != "введите имя":
+            print("OK")
+        else:
+            self.nicknameEdit.setText("")
 
     def connect_to_device(self, item):
         item_number = self.foundedListWidget.row(item)
@@ -45,12 +49,7 @@ class MainScreen(QMainWindow):
         def on_device_connection_state_changed(address, state):
             item.setText(item_info.Name + ' (' + item_info.Address + '): ' + state.name)
             if address==item_info.Address and state==ConnectionState.Connected:
-                self.startCalcButton.setVisible(True)
-                self.stopCalcButton.setVisible(True)
-                self.label_3.setVisible(True)
-                self.hasRR.setVisible(True)
-                self.label_4.setVisible(True)
-                self.hrValue.setVisible(True)
+                self.startConServBtn.setEnabled(True)
 
         callibri_controller.connectionStateChanged.connect(on_device_connection_state_changed)
         callibri_controller.connect_to(info=item_info, need_reconnect=True)
