@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify
-
+import sqlite3
 app = Flask(__name__)
 
 # Замените 'data.txt' на желаемый путь к файлу
-data_file = 'data.txt'
+data_file = 'db\\users.db'
 
 @app.route('/writedata')
 def write_data():
