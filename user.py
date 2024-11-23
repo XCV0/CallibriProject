@@ -14,6 +14,8 @@ class MainScreen(QMainWindow):
         super().__init__(*args, **kwargs)
         loadUi("ui/MainWindow.ui", self)
 
+        #лох
+
         self.findDeviceBtn.clicked.connect(self.start_search)
         self.startConServBtn.clicked.connect(self.start_calc)
         self.stopConServBtn.clicked.connect(self.stop_calc)
