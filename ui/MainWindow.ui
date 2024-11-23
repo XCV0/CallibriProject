@@ -17,11 +17,19 @@
    <widget class="QLineEdit" name="nicknameEdit">
     <property name="geometry">
      <rect>
-      <x>120</x>
+      <x>110</x>
       <y>90</y>
       <width>231</width>
       <height>31</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
     </property>
    </widget>
    <widget class="QLabel" name="label">
@@ -48,16 +56,20 @@
    <widget class="QPushButton" name="findDeviceBtn">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>140</x>
       <y>200</y>
-      <width>161</width>
+      <width>181</width>
       <height>41</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>14</pointsize>
+      <pointsize>12</pointsize>
      </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgba(0, 200, 0, 0.4);
+</string>
     </property>
     <property name="text">
      <string>Поиск устройства</string>
@@ -93,6 +105,9 @@
       <height>111</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
    </widget>
    <widget class="QPushButton" name="startConServBtn">
     <property name="enabled">
@@ -105,6 +120,9 @@
       <width>181</width>
       <height>61</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgba(0, 255, 0, 0.5);</string>
     </property>
     <property name="text">
      <string>Старт</string>
@@ -121,6 +139,9 @@
       <width>181</width>
       <height>61</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgba(255, 0, 0, 0.5);</string>
     </property>
     <property name="text">
      <string>Стоп</string>
