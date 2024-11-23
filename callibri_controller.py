@@ -52,6 +52,7 @@ class CallibriController(QObject):
     connectionStateChanged = pyqtSignal(str, ConnectionState)
     batteryChanged = pyqtSignal(str, int)
     hrValuesUpdated = pyqtSignal(str, float)
+    pressureIndexUpdated = pyqtSignal(str, float)  # Сигнал для передачи индекса стресса
     hasRRPicks = pyqtSignal(str, bool)
     foundedDevices = pyqtSignal(list)
 
@@ -158,42 +159,56 @@ class CallibriController(QObject):
         sens.callibri = None
 
     def start_calculations(self, address: str):
+        """Запускаем вычисления для устройства."""
         def on_signal_received(sensor: Sensor, data: List[CallibriSignalData]):
             try:
-                math = self.__connected_devices[address].ecg_math
-                buf_size = self.__connected_devices[address].buf_size
-                buffer = self.__connected_devices[address].signal_data
-
-                for sample in data:
-                    for value in sample.Samples:
-                        buffer.put(value)
-                if buffer.qsize() > buf_size:
-                    raw_data = [buffer.get() for _ in range(buf_size)]
-                    math.push_data(raw_data)
-                    math.process_data_arr()
-                    rr_detected = math.rr_detected()
-                    self.hasRRPicks.emit(sensor.address, rr_detected)
-                    if rr_detected:
-                        hr = math.get_hr()
-                        self.hrValuesUpdated.emit(sensor.address, hr)
+                self._process_ecg_data(address, data)
             except Exception as err:
-                print(err)
+                print(f"Error processing ECG data: {err}")
 
         self.__connected_devices[address].callibri.signalDataReceived = on_signal_received
         self.__execute_command(self.__connected_devices[address].callibri, SensorCommand.StartSignal)
         self.__connected_devices[address].is_signal = True
 
+    def _process_ecg_data(self, address: str, data: List[CallibriSignalData]):
+        """Обрабатываем полученные данные ЭКГ."""
+        buffer = self.__connected_devices[address].signal_data
+        for sample in data:
+            for value in sample.Samples:
+                buffer.put(value)
+
+        math = self.__connected_devices[address].ecg_math
+        buf_size = self.__connected_devices[address].buf_size
+
+        if buffer.qsize() > buf_size:
+            raw_data = [buffer.get() for _ in range(buf_size)]
+            math.push_data(raw_data)
+            math.process_data_arr()
+
+            if math.rr_detected():
+                hr = math.get_hr()  # Частота сердечных сокращений
+                pi = math.get_pressure_index()  # Индекс стресса (Pressure Index)
+
+                self.hrValuesUpdated.emit(address, hr)  # Отправляем значение HR
+                self.pressureIndexUpdated.emit(address, pi)  # Отправляем индекс стресса
+
+                self.hasRRPicks.emit(address, True)
+            else:
+                self.hasRRPicks.emit(address, False)
+
     def stop_calculations(self, address: str):
+        """Останавливаем вычисления для устройства."""
         self.__connected_devices[address].callibri.signalDataReceived = None
         self.__execute_command(self.__connected_devices[address].callibri, SensorCommand.StopSignal)
         self.__connected_devices[address].is_signal = False
 
     def __execute_command(self, sensor: Sensor, command: SensorCommand):
+        """Выполняем команду на датчике в отдельном потоке."""
         def execute_command():
             try:
                 sensor.exec_command(command)
             except Exception as err:
-                print(err)
+                print(f"Error executing command: {err}")
 
         thread = Thread(target=execute_command)
         thread.start()
