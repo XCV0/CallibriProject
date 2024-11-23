@@ -1,7 +1,7 @@
 import queue
 from threading import Thread
 from typing import List
-
+import time
 from PyQt6.QtCore import QObject, pyqtSignal, QThread
 from neurosdk.callibri_sensor import CallibriSensor
 from neurosdk.scanner import Scanner
@@ -195,6 +195,7 @@ class CallibriController(QObject):
                 self.hasRRPicks.emit(address, True)
             else:
                 self.hasRRPicks.emit(address, False)
+        time.sleep(5)
 
     def stop_calculations(self, address: str):
         """Останавливаем вычисления для устройства."""
