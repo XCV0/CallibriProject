@@ -14,8 +14,6 @@ class MainScreen(QMainWindow):
         super().__init__(*args, **kwargs)
         loadUi("ui/AdminWindow.ui", self)
 
-        self.resetBtn.clicked.connect(self.refresh)
-        
     def refresh(self):
       pass
 
