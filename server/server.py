@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import sqlite3
+import json
 app = Flask(__name__)
 
 # Замените 'data.txt' на желаемый путь к файлу\
@@ -59,6 +60,29 @@ def write_status():
   except Exception as e:
     return jsonify({'error': str(e)}), 500
   
+  
+@app.route('/get_online')  
+def write_online():
+  try:
+    with sqlite3.connect("server\\db\\users.db") as db:
+      cursor = db.cursor()
+      
+    query = "SELECT * FROM users WHERE status_now = ?"
+    status_value = "online" 
+    cursor.execute(query, (status_value,))
+
+
+    
+    columns = [column[0] for column in cursor.description] 
+    rows = cursor.fetchall()
+
+    
+    data = [dict(zip(columns, row)) for row in rows]
+    json_data = json.dumps(data, ensure_ascii=False, indent=4)
+    return json_data
+
+  except Exception as e:
+    return jsonify({'error': str(e)}), 500
   
 if __name__ == '__main__':
   app.run(debug=True, port=8080)
