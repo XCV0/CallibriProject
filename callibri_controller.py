@@ -195,7 +195,7 @@ class CallibriController(QObject):
                 self.hasRRPicks.emit(address, True)
             else:
                 self.hasRRPicks.emit(address, False)
-        time.sleep(5)
+        # time.sleep(5)
 
     def stop_calculations(self, address: str):
         """Останавливаем вычисления для устройства."""

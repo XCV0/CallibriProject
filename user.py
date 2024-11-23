@@ -1,7 +1,8 @@
 #ТУТ КЛИЕНТ ДЛЯ ПЕРЕДАЧИ ДАННЫХ НАШЕГО СОТРУДНИКА НА СЕРВАК#
 
 import requests
-import time
+import datetime
+
 import sys
 from PyQt6.QtCore import QTimer
 
@@ -15,6 +16,71 @@ from callibri_controller import callibri_controller, ConnectionState, CallibriIn
 server_ip = '25.8.42.226'
 server_port = '8080'
 
+last_time = 0
+pulse = 0
+emotions = 0
+
+def check_time(time_str):
+        time_obj = datetime.strptime(time_str, '%d-%m-%H-%M-%S')
+        return (datetime.now() - time_obj) > datetime.timedelta(seconds=5)
+
+def write_pulse_to_server(nickname, pulsedata):
+    try:
+        now = datetime.datetime.now()
+        print(now.strftime("%d-%m-%H-%M-%S"))
+        if last_time == 0:
+            last_time = now
+            pulsedata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{pulsedata}"
+        else:
+            if check_time(last_time):
+                last_time = now
+                pulsedata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{pulsedata}"
+
+        requests.get(f"http://{server_ip}:{server_port}/write_pulse?name={nickname}&datapulse={pulsedata}")
+
+    except Exception as e:
+        print(e)
+
+def write_emotions_to_server(nickname, emotionsdata):
+    try:
+        now = datetime.datetime.now()
+        print(now.strftime("%d-%m-%H-%M-%S"))
+        if last_time == 0:
+            last_time = now
+            emotionsdata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{emotionsdata}"
+        else:
+            if check_time(last_time):
+                last_time = now
+                emotionsdata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{emotionsdata}"
+
+        requests.get(f"http://{server_ip}:{server_port}/write_emotions?name={nickname}&emotions={emotionsdata}")
+    except Exception as e:
+        print(e)
+
+# def write_data_to_server(nickname, pulsedata, emotionsdata):
+#     try:
+#         now = datetime.datetime.now()
+#         print(now.strftime("%d-%m-%H-%M-%S"))
+#         if last_time == 0:
+#             last_time = now
+#             pulsedata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{pulsedata}" 
+#             emotionsdata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{emotionsdata}"
+#         else:
+#             if check_time(last_time):
+#                 last_time = now
+#                 pulsedata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{pulsedata}"
+#                 emotionsdata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{emotionsdata}"
+
+#         requests.get(f"http://{server_ip}:{server_port}/writedata?name={nickname}&datapulse={pulsedata}&emotions={emotionsdata}")
+#     except Exception as e:
+#         print(e)
+
+def write_status_to_server(nickname, status):
+    print("func")
+    try:
+        requests.get(f"http://{server_ip}:{server_port}/write_status?name={nickname}&status={status}")
+    except Exception as e:
+        print(e)
 
 class MainScreen(QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -43,17 +109,7 @@ class MainScreen(QMainWindow):
         callibri_controller.foundedDevices.connect(on_device_founded)
         callibri_controller.search_with_result(5, [])
 
-    def write_data_to_server(nickname, pulsedata, emotionsdata):
-        try:
-            requests.get(f"http://{server_ip}:{server_port}/writedata?name={nickname}&datapulse={pulsedata}&emotions={emotionsdata}")
-        except Exception as e:
-            print(e)
-    
-    def write_status_to_server(nickname, status):
-        try:
-            requests.get(f"http://{server_ip}:{server_port}/writestatus?name={nickname}&status={status}")
-        except Exception as e:
-            print(e)
+
 
     def connect_to_device(self, item):
         item_number = self.foundedListWidget.row(item)
@@ -68,22 +124,28 @@ class MainScreen(QMainWindow):
         callibri_controller.connect_to(info=item_info, need_reconnect=True)
 
     def start_calc(self):
-        def delayed_measurement():
-                # Запускаем вычисления после задержки
-                callibri_controller.hrValuesUpdated.connect(hr_values_updated)
-                callibri_controller.pressureIndexUpdated.connect(on_pressure_index_updated)
-                callibri_controller.start_calculations(current_device)
-                
-        if str(self.nicknameEdit.text()) != "" or str(self.nicknameEdit.text()) != "введите никнейм":
+        if str(self.nicknameEdit.text()) != "":
             self.startConServBtn.setEnabled(False)
             self.stopConServBtn.setEnabled(True)
             current_device=callibri_controller.connected_devices[0]
             def hr_values_updated(address: str, hr: float):
+                global pulse
+                
                 if address == current_device:
-                    print("%.2f" % hr)
+                    # print("%.2f" % hr)
+                    pulse = "%.2f" % hr
+                    write_pulse_to_server(nickname=str(self.nicknameEdit.text()), pulsedata=pulse)
+                    
 
             def on_pressure_index_updated(address: str, pressure_index: float):
+                global emotions
                 print(f"Pressure Index for {address}: {pressure_index:.2f}")
+                emotions = f"{pressure_index:.2f}"
+                write_emotions_to_server(nickname=str(self.nicknameEdit.text()), emotionsdata=emotions)
+    
+
+            write_status_to_server(nickname=str(self.nicknameEdit.text()), status="online")
+            
 
     # Здесь ты можешь обновить отображение индекса стресса в интерфейсе
 
@@ -96,10 +158,17 @@ class MainScreen(QMainWindow):
 
 
         # Задержка перед началом вычислений
-        QTimer.singleShot(5000, delayed_measurement)
+
+            callibri_controller.hrValuesUpdated.connect(hr_values_updated)
+            callibri_controller.pressureIndexUpdated.connect(on_pressure_index_updated)
+            callibri_controller.start_calculations(current_device)
+
+        else:
+            print("Введите никнейм")
 
     def stop_calc(self):
         try:
+            write_status_to_server(nickname=str(self.nicknameEdit.text()), status="offline")
             callibri_controller.hrValuesUpdated.disconnect()
             callibri_controller.hasRRPicks.disconnect()
             callibri_controller.pressureIndexUpdated.disconnect()
