@@ -9,7 +9,7 @@ data_file = "server\\db\\users.db"
 #connection = sqlite3.connect(data_file)
 #cursor = connection.cursor()
 
-@app.route('/writedata')
+@app.route('/write_data')
 def write_data():
   try:
     name = request.args.get('name')
@@ -32,7 +32,13 @@ def write_data():
        return jsonify({'message': 'Данные успешно записаны'}), 200
     else:
       old_datapulse = cursor.execute("SELECT pulse_data FROM users WHERE nickname = ?", (name,)).fetchone()
-      cursor.execute(f"UPDATE users SET pulse_data = '{old_datapulse} + ) + {datapulse}'")
+      print(old_datapulse[0])
+      
+      new_data = str(old_datapulse[0]) + ")" + str(datapulse)
+      print(new_data)
+
+      cursor.execute("UPDATE users SET pulse_data = ? WHERE nickname = ?", (new_data, name))
+      db.commit()
       return jsonify({'message': 'Данные успешно записаны'}), 200
     
 
@@ -40,7 +46,7 @@ def write_data():
     return jsonify({'error': str(e)}), 500
 
   
-@app.route('/writestatus')  
+@app.route('/write_status')  
 def write_status():
   try:
     name = request.args.get('name')
@@ -57,7 +63,6 @@ def write_status():
     
     if exists:
       cursor.execute(f"UPDATE users SET status_now = '{status}' WHERE nickname = ?", (name,))
-    
     
     db.commit()
     return jsonify({'message': 'Данные успешно записаны'}), 200
@@ -89,5 +94,22 @@ def write_online():
   except Exception as e:
     return jsonify({'error': str(e)}), 500
   
+@app.route('/delete_user')
+def delete_data():
+  try:
+    name = request.args.get('name')
+    
+    with sqlite3.connect("server\\db\\users.db") as db:
+      cursor = db.cursor()
+      
+    cursor.execute(f"DELETE FROM users WHERE nickname = ?", (name,))
+    db.commit()
+    return jsonify({'message': 'Данные успешно удалены'}), 200
+
+  except Exception as e:
+    return jsonify({'error': str(e)}), 500
+    
+
+  
 if __name__ == '__main__':
-  app.run(host='25.8.42.226', debug=True, port=8080)
+  app.run(host='25.8.42.226', debug=True, port=8080)  
