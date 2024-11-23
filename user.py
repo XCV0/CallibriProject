@@ -1,7 +1,10 @@
 #ТУТ КЛИЕНТ ДЛЯ ПЕРЕДАЧИ ДАННЫХ НАШЕГО СОТРУДНИКА НА СЕРВАК#
 
-# import requests
+import requests
+import time
 import sys
+from PyQt6.QtCore import QTimer
+
 
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.uic import loadUi
@@ -9,12 +12,14 @@ from PyQt6.uic import loadUi
 from callibri_controller import callibri_controller, ConnectionState, CallibriInfo
 
 
+server_ip = '25.8.42.226'
+server_port = '8080'
+
+
 class MainScreen(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi("ui/MainWindow.ui", self)
-
-        #лох
 
         self.findDeviceBtn.clicked.connect(self.start_search)
         self.startConServBtn.clicked.connect(self.start_calc)
@@ -38,6 +43,18 @@ class MainScreen(QMainWindow):
         callibri_controller.foundedDevices.connect(on_device_founded)
         callibri_controller.search_with_result(5, [])
 
+    def write_data_to_server(nickname, pulsedata, emotionsdata):
+        try:
+            requests.get(f"http://{server_ip}:{server_port}/writedata?name={nickname}&datapulse={pulsedata}&emotions={emotionsdata}")
+        except Exception as e:
+            print(e)
+    
+    def write_status_to_server(nickname, status):
+        try:
+            requests.get(f"http://{server_ip}:{server_port}/writestatus?name={nickname}&status={status}")
+        except Exception as e:
+            print(e)
+
     def connect_to_device(self, item):
         item_number = self.foundedListWidget.row(item)
         item_info=self.__founded_sensors[item_number]
@@ -51,6 +68,12 @@ class MainScreen(QMainWindow):
         callibri_controller.connect_to(info=item_info, need_reconnect=True)
 
     def start_calc(self):
+        def delayed_measurement():
+                # Запускаем вычисления после задержки
+                callibri_controller.hrValuesUpdated.connect(hr_values_updated)
+                callibri_controller.pressureIndexUpdated.connect(on_pressure_index_updated)
+                callibri_controller.start_calculations(current_device)
+                
         if str(self.nicknameEdit.text()) != "" or str(self.nicknameEdit.text()) != "введите никнейм":
             self.startConServBtn.setEnabled(False)
             self.stopConServBtn.setEnabled(True)
@@ -71,10 +94,9 @@ class MainScreen(QMainWindow):
         #     pass
 
 
-            callibri_controller.hrValuesUpdated.connect(hr_values_updated)
-            callibri_controller.pressureIndexUpdated.connect(on_pressure_index_updated)
-            # callibri_controller.hasRRPicks.connect(has_rr_picks)
-            callibri_controller.start_calculations(current_device)
+
+        # Задержка перед началом вычислений
+        QTimer.singleShot(5000, delayed_measurement)
 
     def stop_calc(self):
         try:
