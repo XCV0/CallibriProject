@@ -9,48 +9,98 @@ data_file = "server\\db\\users.db"
 #connection = sqlite3.connect(data_file)
 #cursor = connection.cursor()
 
-@app.route('/write_data')
-def write_data():
+@app.route('/write_pulse')
+def write_pulse():
   try:
     name = request.args.get('name')
     datapulse = request.args.get('datapulse')
+    
+    
+    values = [
+      (name),(datapulse)
+    ]
+    
+    if not name or not datapulse:
+      return jsonify({'error': 'Не все параметры указаны'}), 400
+    
+    with sqlite3.connect("server\\db\\users.db") as db:
+      cursor = db.cursor()
+    
+   
+     
+    if(cursor.execute(f"SELECT * FROM users WHERE nickname = ?", (name,)).fetchone() is None):
+       cursor.execute("INSERT INTO users(nickname, pulse_data) VALUES(?, ?)", values)
+       db.commit()
+       return jsonify({'message': 'Данные успешно записаны'}), 200
+    else:
+      old_datapulse = cursor.execute("SELECT pulse_data FROM users WHERE nickname = ?", (name,)).fetchone()
+      if str(old_datapulse[0]) == "None":
+        cursor.execute("UPDATE users SET pulse_data = ? WHERE nickname = ?", (datapulse, name))
+        db.commit()
+        return jsonify({'message': 'Данные успешно записаны'}), 200
+
+        
+      else:
+      
+        new_data = str(old_datapulse[0]) + ")" + str(datapulse)
+
+        cursor.execute("UPDATE users SET pulse_data = ? WHERE nickname = ?", (new_data, name))
+        db.commit()
+        return jsonify({'message': 'Данные успешно записаны'}), 200
+
+    
+
+  except Exception as e:
+    return jsonify({'error': str(e)}), 500
+
+@app.route('/write_emotions')
+def write_emotions():
+  try:
+    name = request.args.get('name')
     emotions = request.args.get('emotions')
     
     values = [
-      (name),(datapulse),(emotions)
+      (name),(emotions)
     ]
     
-    if not name or not datapulse or not emotions:
+    if not name or not emotions:
       return jsonify({'error': 'Не все параметры указаны'}), 400
     
     with sqlite3.connect("server\\db\\users.db") as db:
       cursor = db.cursor()
      
     if(cursor.execute(f"SELECT * FROM users WHERE nickname = ?", (name,)).fetchone() is None):
-       cursor.execute("INSERT INTO users(nickname, pulse_data, emotions_data) VALUES(?, ?, ?)", values)
+       cursor.execute("INSERT INTO users(nickname, emotions_data) VALUES(?, ?)", values)
        db.commit()
        return jsonify({'message': 'Данные успешно записаны'}), 200
     else:
-      old_datapulse = cursor.execute("SELECT pulse_data FROM users WHERE nickname = ?", (name,)).fetchone()
-      print(old_datapulse[0])
-      
-      new_data = str(old_datapulse[0]) + ")" + str(datapulse)
-      print(new_data)
+      old_emotions = cursor.execute("SELECT emotions_data FROM users WHERE nickname = ?", (name,)).fetchone()
+      if str(old_emotions[0]) == "None":
+        cursor.execute("UPDATE users SET emotions_data = ? WHERE nickname = ?", (emotions, name))
+        db.commit()
+        return jsonify({'message': 'Данные успешно записаны'}), 200
+      else:
+        new_data = str(old_emotions[0]) + ")" + str(emotions)
+        print(new_data)
 
-      cursor.execute("UPDATE users SET pulse_data = ? WHERE nickname = ?", (new_data, name))
-      db.commit()
-      return jsonify({'message': 'Данные успешно записаны'}), 200
+        cursor.execute("UPDATE users SET emotions_data = ? WHERE nickname = ?", (new_data, name))
+        db.commit()
+        return jsonify({'message': 'Данные успешно записаны'}), 200
     
 
   except Exception as e:
     return jsonify({'error': str(e)}), 500
-
   
 @app.route('/write_status')  
 def write_status():
   try:
     name = request.args.get('name')
     status = request.args.get('status')
+    
+    status_value = "online"
+    values = [
+      (name),(status_value)
+    ]
     
     if not name:
       return jsonify({'error': 'Не все параметры указаны'}), 400
@@ -63,7 +113,9 @@ def write_status():
     
     if exists:
       cursor.execute(f"UPDATE users SET status_now = '{status}' WHERE nickname = ?", (name,))
-    
+    else:
+      cursor.execute(f"INSERT INTO users(nickname, status_now) VALUES(?, ?)", values)
+      
     db.commit()
     return jsonify({'message': 'Данные успешно записаны'}), 200
 
@@ -98,6 +150,9 @@ def write_online():
 def delete_data():
   try:
     name = request.args.get('name')
+    
+    if not name:
+      return jsonify({'error': 'Не все параметры указаны'}), 400
     
     with sqlite3.connect("server\\db\\users.db") as db:
       cursor = db.cursor()
