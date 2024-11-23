@@ -25,11 +25,16 @@ def write_data():
     
     with sqlite3.connect("server\\db\\users.db") as db:
       cursor = db.cursor()
-      
-    cursor.execute("INSERT INTO users(nickname, pulse_data, emotions_data) VALUES(?, ?, ?)", values)
-    db.commit()
+     
+    if(cursor.execute(f"SELECT * FROM users WHERE nickname = ?", (name,)).fetchone() is None):
+       cursor.execute("INSERT INTO users(nickname, pulse_data, emotions_data) VALUES(?, ?, ?)", values)
+       db.commit()
+       return jsonify({'message': 'Данные успешно записаны'}), 200
+    else:
+      old_datapulse = cursor.execute("SELECT pulse_data FROM users WHERE nickname = ?", (name,)).fetchone()
+      cursor.execute(f"UPDATE users SET pulse_data = '{old_datapulse} + ) + {datapulse}'")
+      return jsonify({'message': 'Данные успешно записаны'}), 200
     
-    return jsonify({'message': 'Данные успешно записаны'}), 200
 
   except Exception as e:
     return jsonify({'error': str(e)}), 500
@@ -85,4 +90,4 @@ def write_online():
     return jsonify({'error': str(e)}), 500
   
 if __name__ == '__main__':
-  app.run(debug=True, port=8080)
+  app.run(host='25.8.42.226', debug=True, port=8080)
