@@ -21,41 +21,46 @@ pulse = 0
 emotions = 0
 
 def check_time(time_str):
-        time_obj = datetime.strptime(time_str, '%d-%m-%H-%M-%S')
-        return (datetime.now() - time_obj) > datetime.timedelta(seconds=5)
+        time_obj = datetime.datetime.strptime(time_str, '%d-%m-%H-%M-%S')
+        return (datetime.datetime.now() - time_obj) > datetime.timedelta(seconds=5)
 
 def write_pulse_to_server(nickname, pulsedata):
+    global last_time
     try:
         now = datetime.datetime.now()
         print(now.strftime("%d-%m-%H-%M-%S"))
         if last_time == 0:
-            last_time = now
+            last_time = now.strftime("%d-%m-%H-%M-%S")
             pulsedata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{pulsedata}"
         else:
             if check_time(last_time):
-                last_time = now
+                last_time = now.strftime("%d-%m-%H-%M-%S")
                 pulsedata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{pulsedata}"
 
-        requests.get(f"http://{server_ip}:{server_port}/write_pulse?name={nickname}&datapulse={pulsedata}")
+                requests.get(f"http://{server_ip}:{server_port}/write_pulse?name={nickname}&datapulse={pulsedata}")
+        print(server_ip)
 
     except Exception as e:
         print(e)
+        sys.exit()
 
 def write_emotions_to_server(nickname, emotionsdata):
+    global last_time
     try:
         now = datetime.datetime.now()
         print(now.strftime("%d-%m-%H-%M-%S"))
         if last_time == 0:
-            last_time = now
+            last_time = now.strftime("%d-%m-%H-%M-%S")
             emotionsdata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{emotionsdata}"
         else:
             if check_time(last_time):
-                last_time = now
+                last_time = now.strftime("%d-%m-%H-%M-%S")
                 emotionsdata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{emotionsdata}"
 
-        requests.get(f"http://{server_ip}:{server_port}/write_emotions?name={nickname}&emotions={emotionsdata}")
+                requests.get(f"http://{server_ip}:{server_port}/write_emotions?name={nickname}&emotions={emotionsdata}")
     except Exception as e:
         print(e)
+        sys.exit()
 
 # def write_data_to_server(nickname, pulsedata, emotionsdata):
 #     try:
