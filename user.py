@@ -1,10 +1,8 @@
 #ТУТ КЛИЕНТ ДЛЯ ПЕРЕДАЧИ ДАННЫХ НАШЕГО СОТРУДНИКА НА СЕРВАК#
-
 import requests
 import datetime
 
 import sys
-from PyQt6.QtCore import QTimer
 
 
 from PyQt6.QtWidgets import QApplication, QMainWindow
@@ -61,24 +59,6 @@ def write_emotions_to_server(nickname, emotionsdata):
     except Exception as e:
         print(e)
         sys.exit()
-
-# def write_data_to_server(nickname, pulsedata, emotionsdata):
-#     try:
-#         now = datetime.datetime.now()
-#         print(now.strftime("%d-%m-%H-%M-%S"))
-#         if last_time == 0:
-#             last_time = now
-#             pulsedata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{pulsedata}" 
-#             emotionsdata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{emotionsdata}"
-#         else:
-#             if check_time(last_time):
-#                 last_time = now
-#                 pulsedata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{pulsedata}"
-#                 emotionsdata = str(now.strftime("%d-%m-%H-%M-%S")) + f"-{emotionsdata}"
-
-#         requests.get(f"http://{server_ip}:{server_port}/writedata?name={nickname}&datapulse={pulsedata}&emotions={emotionsdata}")
-#     except Exception as e:
-#         print(e)
 
 def write_status_to_server(nickname, status):
     print("func")
@@ -137,7 +117,6 @@ class MainScreen(QMainWindow):
                 global pulse
                 
                 if address == current_device:
-                    # print("%.2f" % hr)
                     pulse = "%.2f" % hr
                     write_pulse_to_server(nickname=str(self.nicknameEdit.text()), pulsedata=pulse)
                     
@@ -151,19 +130,6 @@ class MainScreen(QMainWindow):
 
             write_status_to_server(nickname=str(self.nicknameEdit.text()), status="online")
             
-
-    # Здесь ты можешь обновить отображение индекса стресса в интерфейсе
-
-
-        # def has_rr_picks(address: str, has_picks: bool):            
-        #     # if address == current_device:
-        #     #     self.hasRR.setText("Есть" if has_picks else "Нет")
-        #     pass
-
-
-
-        # Задержка перед началом вычислений
-
             callibri_controller.hrValuesUpdated.connect(hr_values_updated)
             callibri_controller.pressureIndexUpdated.connect(on_pressure_index_updated)
             callibri_controller.start_calculations(current_device)
