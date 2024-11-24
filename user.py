@@ -139,17 +139,17 @@ class MainScreen(QMainWindow):
                 if address == current_device:
                     # print("%.2f" % hr)
                     pulse = "%.2f" % hr
-                    write_pulse_to_server(nickname=str(self.nicknameEdit.text()), pulsedata=pulse)
+                    # write_pulse_to_server(nickname=str(self.nicknameEdit.text()), pulsedata=pulse)
                     
 
             def on_pressure_index_updated(address: str, pressure_index: float):
                 global emotions
                 print(f"Pressure Index for {address}: {pressure_index:.2f}")
                 emotions = f"{pressure_index:.2f}"
-                write_emotions_to_server(nickname=str(self.nicknameEdit.text()), emotionsdata=emotions)
+                # write_emotions_to_server(nickname=str(self.nicknameEdit.text()), emotionsdata=emotions)
     
 
-            write_status_to_server(nickname=str(self.nicknameEdit.text()), status="online")
+            # write_status_to_server(nickname=str(self.nicknameEdit.text()), status="online")
             
 
     # Здесь ты можешь обновить отображение индекса стресса в интерфейсе
