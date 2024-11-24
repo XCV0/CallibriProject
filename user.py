@@ -143,7 +143,7 @@ class MainScreen(QMainWindow):
     def stop_calc(self):
         try:
             write_status_to_server(nickname=str(self.nicknameEdit.text()), status="offline")
-
+            delete_record_from_server(nickname=str(self.nicknameEdit.text()))
             callibri_controller.hrValuesUpdated.disconnect()
             callibri_controller.hasRRPicks.disconnect()
             callibri_controller.pressureIndexUpdated.disconnect()
