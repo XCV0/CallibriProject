@@ -18,6 +18,9 @@ last_time = 0
 pulse = 0
 emotions = 0
 
+def delete_record_from_server(nickname):
+    requests.get(f"http://{server_ip}:{server_port}/delete_user?name={nickname}")
+
 def check_time(time_str):
         time_obj = datetime.datetime.strptime(time_str, '%d-%m-%H-%M-%S')
         return (datetime.datetime.now() - time_obj) > datetime.timedelta(seconds=5)
@@ -140,6 +143,7 @@ class MainScreen(QMainWindow):
     def stop_calc(self):
         try:
             write_status_to_server(nickname=str(self.nicknameEdit.text()), status="offline")
+
             callibri_controller.hrValuesUpdated.disconnect()
             callibri_controller.hasRRPicks.disconnect()
             callibri_controller.pressureIndexUpdated.disconnect()
